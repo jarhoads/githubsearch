@@ -12,12 +12,12 @@ export class AppComponent implements OnInit {
   constructor(private gitService: GitSearchService) { }
 
   ngOnInit() {
-    this.gitService.getGitSearch('angular')
-                   .subscribe((response) => console.log(`Total Libraries Found: ${response.total_count}`),
-                              (error) => console.log(`Error: ${error.statusText}`));
-    this.gitService.userSearch('tom')
-                   .subscribe((response) => console.log(`Total Libraries Found: ${response.total_count}`),
-                              (error) => console.log(`Error: ${error.statusText}`));
+    // this.gitService.gitSearch('angular')
+    //                .subscribe((response) => console.log(`Total Libraries Found: ${response.total_count}`),
+    //                           (error) => console.log(`Error: ${error.statusText}`));
+    // this.gitService.userSearch('tom')
+    //                .subscribe((response) => console.log(`Total Libraries Found: ${response.total_count}`),
+    //                           (error) => console.log(`Error: ${error.statusText}`));
     // this.gitService.gitSearch('angular')
     //                .then( (response) => console.log(`Total Libraries Found: ${response.total_count}`),
     //                       (error) => console.log(`Error: ${error.statusText}`) );

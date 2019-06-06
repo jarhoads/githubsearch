@@ -16,7 +16,7 @@ export class GitSearchService {
 
   constructor(private http: HttpClient) { }
 
-  getGitSearch(query: string): Observable<GitSearch> {
+  gitSearch(query: string): Observable<GitSearch> {
     return this.http.get('https://api.github.com/search/repositories?q=' + query) as Observable<GitSearch>;
   }
 
@@ -24,10 +24,10 @@ export class GitSearchService {
     return this.http.get('https://api.github.com/search/users?q=' + user) as Observable<UserSearch>;
   }
 
-  gitSearch = (query: string) => {
-    // if(this.cashedValues[query]){ return Observable.create(query); }
-    this.http.get('https://api.github.com/search/repositories?q=' + query);
-  }
+  // gitSearch = (query: string) => {
+  //   // if(this.cashedValues[query]){ return Observable.create(query); }
+  //   this.http.get('https://api.github.com/search/repositories?q=' + query);
+  // }
     // let promise = new Promise<GitSearch>((resolve, reject) => {
 
     //   if (this.cashedValues[query]) {
