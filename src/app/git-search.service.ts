@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { GitSearch } from './git-search';
 import { UserSearch } from './user-search';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 // import 'rxjs';
@@ -16,8 +16,12 @@ export class GitSearchService {
 
   constructor(private http: HttpClient) { }
 
-  gitSearch(query: string): Observable<GitSearch> {
-    return this.http.get('https://api.github.com/search/repositories?q=' + query) as Observable<GitSearch>;
+  gitSearch(query: string, page: string): Observable<GitSearch> {
+    return this.http.get<GitSearch>('https://api.github.com/search/repositories?q=' + query + '&page=' + page);
+  }
+
+  getLastPage(query: string, page: string): Observable<HttpResponse<object>> {
+    return this.http.get<object>('https://api.github.com/search/repositories?q=' + query + '&page=' + page, { observe: 'response' });
   }
 
   userSearch(user: string): Observable<UserSearch> {
