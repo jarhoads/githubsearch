@@ -13,7 +13,13 @@ import { NotFoundComponent } from './not-found/not-found.component';
 const appRoutes: Routes = [
   { path: '', component: HomePageComponent },
   {
-    path: 'search', component: GitSearchComponent,
+    path: 'search',
+    redirectTo: '/search/angular',
+    pathMatch: 'full'
+  },
+  {
+    path: 'search/:query',
+    component: GitSearchComponent,
     data: { title: 'Git Search' }
   },
   { path: '**', component: NotFoundComponent }
