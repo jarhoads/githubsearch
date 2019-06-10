@@ -1,15 +1,15 @@
 <h3>{{title}} - {{displayQuery}} - Page: {{displayPage}} of {{totalPages}}</h3>
 
-<form (ngSubmit)="sendQuery()" [formGroup]="form">
+<form (ngSubmit)="sendQuery()">
 
   <div *ngFor="let key of modelKeys">
     {{key}} 
     <input name="{{key}}" 
            placeholder="Enter {{key}} Here" 
-           formControlName="{{key}}" />
+           [(ngModel)]="model[key]" />
   </div>
   
-  <button type="submit" [disabled]="!form.valid">Submit</button>
+  <button type="submit">Submit</button>
 </form>
 
 <div *ngIf="searchResults; else elseTemplate">
