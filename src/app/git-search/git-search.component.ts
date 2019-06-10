@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { GitSearchService } from '../git-search.service';
 import { GitSearch } from '../git-search';
-import { HttpResponse } from '@angular/common/http';
 import { AdvancedSearchModel } from '../advanced-search-model';
+import { SearchFormGroup } from '../search-form-group';
 
 @Component({
   selector: 'app-git-search',
@@ -25,9 +26,14 @@ export class GitSearchComponent implements OnInit {
   model = new AdvancedSearchModel('', '', '', null, null, '');
   modelKeys = Object.keys(this.model); // convert keys of object to array
 
+  form: SearchFormGroup;
+  formControls = {};
+
   constructor(private gitSearchService: GitSearchService,
               private route: ActivatedRoute,
-              private router: Router) { }
+              private router: Router) {
+                this.form = new SearchFormGroup(this.modelKeys);
+              }
 
   ngOnInit() {
 
@@ -41,30 +47,6 @@ export class GitSearchComponent implements OnInit {
     });
 
     this.route.data.subscribe( (result) => { this.title = result.title; });
-  }
-
-  getValidationErrors(state: any, thingName?: string) {
-    const thing: string = state.path || thingName;
-    const messages: string[] = [];
-
-    if (state.errors) {
-      for (const errorName in state.errors) {
-        if (!errorName) { messages.push('unknown error'); } else { messages.push(`Error: ${this.validationMessage(errorName)}`); }
-      }
-    }
-    return messages;
-  }
-
-  private validationMessage(errName: string) {
-    if (errName === 'hasSpecialChars') { return 'Special Characters Not Allowed'; }
-    // tslint:disable-next-line:one-line
-    else if (errName === 'required') { return 'Must Enter A Value'; }
-    // tslint:disable-next-line:one-line
-    else if (errName === 'minlength') { return 'Must Enter Correct Number '; }
-    // tslint:disable-next-line:one-line
-    else if (errName === 'maxlength') { return 'Must Enter Correct Number '; }
-    // tslint:disable-next-line:one-line
-    else { return errName; }
   }
 
   gitSearch = () => {
@@ -98,12 +80,12 @@ export class GitSearchComponent implements OnInit {
 
   sendQuery = () => {
     this.searchResults = null;
-    const search: string = this.model.q;
+    const search: string = this.form.value.q;
     let params = '';
 
     this.modelKeys.forEach((elem) => {
       if (elem === 'q') { return false; }
-      if (this.model[elem]) { params += '+' + elem + ':' + this.model[elem]; }
+      if (this.form.value.elem) { params += '+' + elem + ':' + this.form.value.elem; }
     });
 
     this.searchQuery = search;
@@ -112,7 +94,6 @@ export class GitSearchComponent implements OnInit {
 
     this.displayQuery = this.searchQuery;
     this.gitSearch();
-    // this.router.navigate([`/search/${this.searchQuery}/1`]);
   }
 
   nextPage = () => {
