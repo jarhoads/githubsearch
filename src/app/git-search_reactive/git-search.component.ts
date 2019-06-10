@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { GitSearchService } from '../git-search.service';
 import { GitSearch } from '../git-search';
-import { HttpResponse } from '@angular/common/http';
+
 import { AdvancedSearchModel } from '../advanced-search-model';
 
 @Component({
@@ -25,9 +26,25 @@ export class GitSearchComponent implements OnInit {
   model = new AdvancedSearchModel('', '', '', null, null, '');
   modelKeys = Object.keys(this.model); // convert keys of object to array
 
+  form: FormGroup;
+  formControls = {};
+
   constructor(private gitSearchService: GitSearchService,
               private route: ActivatedRoute,
-              private router: Router) { }
+              private router: Router) {
+
+                this.modelKeys.forEach( (key) => {
+                  const validators = [];
+
+                  if (key === 'q') { validators.push(Validators.required); }
+                  if (key === 'stars') { validators.push(Validators.maxLength(4)); }
+                  validators.push(this.noSpecialChars);
+
+                  this.formControls[key] = new FormControl(this.model[key], validators);
+                });
+
+                this.form = new FormGroup(this.formControls);
+              }
 
   ngOnInit() {
 
@@ -41,6 +58,12 @@ export class GitSearchComponent implements OnInit {
     });
 
     this.route.data.subscribe( (result) => { this.title = result.title; });
+  }
+
+  noSpecialChars(c: FormControl) {
+    const REGEXP = new RegExp(/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/);
+
+    return REGEXP.test(c.value) ? { validateEmail: { valid: false } } : null;
   }
 
   gitSearch = () => {
@@ -74,12 +97,12 @@ export class GitSearchComponent implements OnInit {
 
   sendQuery = () => {
     this.searchResults = null;
-    const search: string = this.model.q;
+    const search: string = this.form.value.q;
     let params = '';
 
     this.modelKeys.forEach((elem) => {
       if (elem === 'q') { return false; }
-      if (this.model[elem]) { params += '+' + elem + ':' + this.model[elem]; }
+      if (this.form.value.elem) { params += '+' + elem + ':' + this.form.value.elem; }
     });
 
     this.searchQuery = search;

@@ -1,15 +1,54 @@
 <h3>{{title}} - {{displayQuery}} - Page: {{displayPage}} of {{totalPages}}</h3>
 
-<form (ngSubmit)="sendQuery()" [formGroup]="form">
+<form novalidate #myForm="ngForm" (ngSubmit)="sendQuery()">
 
-  <div *ngFor="let key of modelKeys">
-    {{key}} 
-    <input name="{{key}}" 
-           placeholder="Enter {{key}} Here" 
-           formControlName="{{key}}" />
-  </div>
-  
-  <button type="submit" [disabled]="!form.valid">Submit</button>
+    <div *ngFor="let key of modelKeys">
+
+        <div *ngIf="key === 'q'" class="form-group">
+          <label>Query</label>
+          <input name="q" 
+              class="form-control" 
+              placeholder="Enter q Here" 
+              [(ngModel)]="model['q']" 
+              required
+              appNoSpecialChars 
+              #query="ngModel" />
+          <ul *ngIf="query?.invalid && query?.dirty">
+            <li *ngFor="let error of getValidationErrors(query)">{{error}}</li>
+          </ul>
+        </div>
+
+      <div *ngIf="key === 'stars'" class="form-group">
+          <label>Stars</label>
+          <input name="stars" 
+                class="form-control" 
+                placeholder="Enter stars Here" 
+                [(ngModel)]="model['stars']" 
+                minlength='2'
+                maxlength='4' 
+                appNoSpecialChars 
+                #stars="ngModel" />
+          <ul *ngIf="stars?.invalid && stars?.dirty">
+            <li *ngFor="let error of getValidationErrors(stars)">{{error}}</li>
+          </ul>
+      </div>
+
+      <div *ngIf="key !== 'stars' && key !== 'q'" class="form-group">
+          <label>{{key}}</label>
+          <input name="{{key}}" 
+                class="form-control" 
+                placeholder="Enter {{key}} Here" 
+                [(ngModel)]="model[key]" 
+                appNoSpecialChars 
+                #name="ngModel" />
+          <ul *ngIf="name?.invalid && name?.dirty">
+            <li *ngFor="let error of getValidationErrors(name)">{{error}}</li>
+          </ul>
+      </div>
+
+    </div>
+
+  <button type="submit" [disabled]="!myForm.valid">Submit</button>
 </form>
 
 <div *ngIf="searchResults; else elseTemplate">
@@ -17,9 +56,8 @@
   <button (click)="prevPage()">Prev Page</button>
   <button (click)="nextPage()">Next Page</button>
   <ul class="list">
-    <li class="list_item" 
-        *ngFor="let result of searchResults.items; let i = index"
-        [ngClass]="{'bg-silver': (i % 2 === 0), 'bg-white': (i % 2 !== 0)}" >
+    <li class="list_item" *ngFor="let result of searchResults.items; let i = index"
+      [ngClass]="{'bg-silver': (i % 2 === 0), 'bg-white': (i % 2 !== 0)}">
       <a [href]="result.html_url">
         <img class="avatar" [src]="result.owner.avatar_url" />
         <h4 class="title">

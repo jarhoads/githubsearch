@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { GitSearchService } from '../git-search.service';
 import { GitSearch } from '../git-search';
-
+import { HttpResponse } from '@angular/common/http';
 import { AdvancedSearchModel } from '../advanced-search-model';
 
 @Component({
@@ -26,25 +25,9 @@ export class GitSearchComponent implements OnInit {
   model = new AdvancedSearchModel('', '', '', null, null, '');
   modelKeys = Object.keys(this.model); // convert keys of object to array
 
-  form: FormGroup;
-  formControls = {};
-
   constructor(private gitSearchService: GitSearchService,
               private route: ActivatedRoute,
-              private router: Router) {
-
-                this.modelKeys.forEach( (key) => {
-                  const validators = [];
-
-                  if (key === 'q') { validators.push(Validators.required); }
-                  if (key === 'stars') { validators.push(Validators.maxLength(4)); }
-                  validators.push(this.noSpecialChars);
-
-                  this.formControls[key] = new FormControl(this.model[key], validators);
-                });
-
-                this.form = new FormGroup(this.formControls);
-              }
+              private router: Router) { }
 
   ngOnInit() {
 
@@ -60,10 +43,28 @@ export class GitSearchComponent implements OnInit {
     this.route.data.subscribe( (result) => { this.title = result.title; });
   }
 
-  noSpecialChars(c: FormControl) {
-    const REGEXP = new RegExp(/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/);
+  getValidationErrors(state: any, thingName?: string) {
+    const thing: string = state.path || thingName;
+    const messages: string[] = [];
 
-    return REGEXP.test(c.value) ? { validateEmail: { valid: false } } : null;
+    if (state.errors) {
+      for (const errorName in state.errors) {
+        if (!errorName) { messages.push('unknown error'); } else { messages.push(`Error: ${this.validationMessage(errorName)}`); }
+      }
+    }
+    return messages;
+  }
+
+  private validationMessage(errName: string) {
+    if (errName === 'hasSpecialChars') { return 'Special Characters Not Allowed'; }
+    // tslint:disable-next-line:one-line
+    else if (errName === 'required') { return 'Must Enter A Value'; }
+    // tslint:disable-next-line:one-line
+    else if (errName === 'minlength') { return 'Must Enter Correct Number '; }
+    // tslint:disable-next-line:one-line
+    else if (errName === 'maxlength') { return 'Must Enter Correct Number '; }
+    // tslint:disable-next-line:one-line
+    else { return errName; }
   }
 
   gitSearch = () => {
@@ -97,12 +98,12 @@ export class GitSearchComponent implements OnInit {
 
   sendQuery = () => {
     this.searchResults = null;
-    const search: string = this.form.value.q;
+    const search: string = this.model.q;
     let params = '';
 
     this.modelKeys.forEach((elem) => {
       if (elem === 'q') { return false; }
-      if (this.form.value.elem) { params += '+' + elem + ':' + this.form.value.elem; }
+      if (this.model[elem]) { params += '+' + elem + ':' + this.model[elem]; }
     });
 
     this.searchQuery = search;
