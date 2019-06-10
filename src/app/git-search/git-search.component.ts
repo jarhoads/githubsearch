@@ -4,6 +4,7 @@ import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { GitSearchService } from '../git-search.service';
 import { GitSearch } from '../git-search';
 import { HttpResponse } from '@angular/common/http';
+import { AdvancedSearchModel } from '../advanced-search-model';
 
 @Component({
   selector: 'app-git-search',
@@ -20,6 +21,9 @@ export class GitSearchComponent implements OnInit {
   displayQuery: string;
   displayPage: string;
   totalPages: number;
+
+  model = new AdvancedSearchModel('', '', '', null, null, '');
+  modelKeys = Object.keys(this.model); // convert keys of object to array
 
   constructor(private gitSearchService: GitSearchService,
               private route: ActivatedRoute,
@@ -70,7 +74,21 @@ export class GitSearchComponent implements OnInit {
 
   sendQuery = () => {
     this.searchResults = null;
-    this.router.navigate([`/search/${this.searchQuery}/1`]);
+    const search: string = this.model.q;
+    let params = '';
+
+    this.modelKeys.forEach((elem) => {
+      if (elem === 'q') { return false; }
+      if (this.model[elem]) { params += '+' + elem + ':' + this.model[elem]; }
+    });
+
+    this.searchQuery = search;
+
+    if (params !== '') { this.searchQuery = search + '+' + params; }
+
+    this.displayQuery = this.searchQuery;
+    this.gitSearch();
+    // this.router.navigate([`/search/${this.searchQuery}/1`]);
   }
 
   nextPage = () => {
