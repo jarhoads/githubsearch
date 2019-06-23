@@ -3,9 +3,11 @@ import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { GitSearchService } from '../git-search.service';
+import { UnifiedSearchService } from '../unified-search.service';
 import { GitSearch } from '../git-search';
 import { AdvancedSearchModel } from '../advanced-search-model';
 import { SearchFormGroup } from '../search-form-group';
+import { UnifiedSearch } from '../unified-search';
 
 @Component({
   selector: 'app-git-search',
@@ -14,7 +16,7 @@ import { SearchFormGroup } from '../search-form-group';
 })
 export class GitSearchComponent implements OnInit {
 
-  searchResults: GitSearch;
+  searchResults: UnifiedSearch;
   searchQuery: string;
   searchPage: string;
   searchNextPage: string;
@@ -22,6 +24,7 @@ export class GitSearchComponent implements OnInit {
   displayQuery: string;
   displayPage: string;
   totalPages: number;
+  favorites: Array<number> = [];
 
   model = new AdvancedSearchModel('', '', '', null, null, '');
   modelKeys = Object.keys(this.model); // convert keys of object to array
@@ -29,7 +32,8 @@ export class GitSearchComponent implements OnInit {
   form: SearchFormGroup;
   formControls = {};
 
-  constructor(private gitSearchService: GitSearchService,
+  constructor(private unifiedService: UnifiedSearchService,
+              private gitSearchService: GitSearchService,
               private route: ActivatedRoute,
               private router: Router) {
                 this.form = new SearchFormGroup(this.modelKeys);
@@ -49,8 +53,27 @@ export class GitSearchComponent implements OnInit {
     this.route.data.subscribe( (result) => { this.title = result.title; });
   }
 
+  checkType = (key) => {
+    return typeof key === 'string' ? 'text' : typeof key;
+  }
+
+  handleFavorite = (id) => {
+    if (this.favorites.includes(id)) {
+      return this.removeByID(id);
+    } else {
+      return this.favorites.push(id);
+    }
+  }
+
+  private removeByID(id: number): number[] {
+    return this.favorites.splice(this.locateId(id), 1);
+  }
+
+  private locateId = (id: number) => this.favorites.indexOf(id);
+
   gitSearch = () => {
-    this.gitSearchService.gitSearch(this.searchQuery, this.searchPage)
+    // this.unifiedService.unifiedSearch(this.searchQuery, this.searchPage)
+    this.unifiedService.unifiedSearch(this.searchQuery)
                          .subscribe((response) => this.searchResults = response,
                                     (error) => console.log(`Error: ${error.statusText}`));
   }

@@ -3,6 +3,8 @@ import { GitSearch } from './git-search';
 import { UserSearch } from './user-search';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map, publishReplay, refCount } from 'rxjs/operators';
+
 
 // import 'rxjs';
 // import { Observable } from 'rxjs';
@@ -12,12 +14,25 @@ import { Observable } from 'rxjs';
 })
 export class GitSearchService {
 
-  cashedValues: Array<{ [query: string]: GitSearch }> = [];
+  cachedSearches: Array<{ [query: string]: GitSearch }> = [];
+  cachedValue: string;
+  search: Observable<GitSearch>;
 
   constructor(private http: HttpClient) { }
 
   gitSearch(query: string, page: string): Observable<GitSearch> {
-    return this.http.get<GitSearch>('https://api.github.com/search/repositories?q=' + query + '&page=' + page);
+
+    if (!this.search) {
+      this.search = this.http.get<GitSearch>('https://api.github.com/search/repositories?q=' + query + '&page=' + page)
+        .pipe(publishReplay(1), refCount()); // cache most recent value, keep alive until no more subscribers
+      this.cachedValue = query;
+
+    } else if (this.cachedValue !== query) {
+      this.search = null;
+      this.gitSearch(query, '1');
+
+    }
+    return this.search;
   }
 
   getLastPage(query: string, page: string): Observable<HttpResponse<object>> {
